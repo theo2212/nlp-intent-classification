@@ -1,5 +1,6 @@
 import time
 import random
+import os
 import pandas as pd
 from sklearn.metrics import classification_report, f1_score
 from dotenv import load_dotenv
