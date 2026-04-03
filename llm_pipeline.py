@@ -12,10 +12,40 @@ class LLMPipeline:
             api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
         self.client = genai.Client(api_key=api_key)
         self.label_names = label_names
+        self.model_name = self._discover_model()
+        print(f"Using model: {self.model_name}")
+
+    def _discover_model(self):
+        """Automatically finds the best available model for the current API key."""
+        try:
+            available_models = [m.name for m in self.client.models.list()]
+            
+            # Preference order
+            preferred = [
+                "models/gemini-1.5-flash",
+                "models/gemini-2.0-flash",
+                "models/gemini-flash-latest",
+                "models/gemini-1.5-pro",
+                "models/gemini-pro-latest"
+            ]
+            
+            for p in preferred:
+                if p in available_models:
+                    return p
+            
+            # Fallback to the first model that supports generateContent
+            for m in available_models:
+                if "flash" in m.lower() or "pro" in m.lower():
+                    return m
+                    
+            return available_models[0] # Ultimate fallback
+        except Exception as e:
+            print(f"Warning: Model discovery failed ({e}). Defaulting to gemini-1.5-flash.")
+            return "gemini-1.5-flash"
 
     def build_prompt(self, ticket_text):
         """Constructs the prompt for zero-shot or few-shot classification."""
-        labels_str = "\\n".join([f"- {label}" for label in self.label_names])
+        labels_str = "\n".join([f"- {label}" for label in self.label_names])
         prompt = f"""You are a customer service intent classification AI for a bank.
 Your task is to classify the USER QUERY into exactly one of the following official categories.
 Do not add any conversational text. Reply ONLY with the exact category name.
@@ -35,7 +65,7 @@ CATEGORY:"""
     def query_gemini_with_retry(self, prompt):
         """Calls Gemini API with resilient exponential backoff for 429 Rate Limit Errors."""
         response = self.client.models.generate_content(
-            model="gemini-1.5-flash",
+            model=self.model_name,
             contents=prompt
         )
         return response.text.strip()

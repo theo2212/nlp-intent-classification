@@ -8,7 +8,13 @@ from classical_ml import ClassicalMLPipeline
 from llm_pipeline import LLMPipeline
 
 # Load environment variables (API Key)
-load_dotenv()
+if not load_dotenv():
+    print("Warning: .env file not found. Ensure environment variables are set manually.")
+
+if not (os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")):
+    print("CRITICAL ERROR: No API Key found. Please create a .env file with GOOGLE_API_KEY=your_key")
+    # We don't exit here to allow Classical ML to still be tested if needed, 
+    # but the LLM part will fail gracefully.
 
 class UnifiedClassifier:
     def __init__(self, classical_pipeline, llm_pipeline, llm_cache):
