@@ -74,3 +74,38 @@ While traditional intuition suggests the Classical ML pipeline is cheaper, Gemin
 Furthermore, the LLM provides intrinsically higher adaptability to new banking categories without requiring full retraining. Therefore, **I recommend deploying the LLM Architecture** bolstered by the implemented `PyArrow`/Parquet caching layer.
 
 The latency trade-off (LLM API overhead vs instantaneous local SVM) is acceptable for asynchronous ticket-routing systems, provided a strict SLA for synchronous live-chat does not demand sub-100ms response times. If real-time inference becomes mandatory, the architecture can fall back on the locally cached embeddings or a distilled baseline model.
+
+---
+
+## 5. How to Run
+
+### 5.1 Prerequisites
+- Python 3.10+
+- A Google Gemini API Key (stored in `.env` as `GEMINI_API_KEY`)
+
+### 5.2 Installation
+```bash
+pip install -r requirements.txt
+```
+
+### 5.3 Execution
+1. **Run the Benchmark**:
+   ```bash
+   python benchmarking.py
+   ```
+   This will train the SVM, query Gemini (with caching), and save metrics to `results.json`.
+
+2. **Generate Visualizations**:
+   ```bash
+   python visualize_results.py
+   ```
+   This generates `f1_score_comparison.png` and `latency_comparison.png`.
+
+---
+
+## 6. Project structure
+- `classical_ml.py`: Word2Vec + SVM Implementation.
+- `llm_pipeline.py`: Gemini-1.5-Flash implementation with exponential backoff.
+- `data_loader.py`: Hugging Face dataset integration and Parquet caching logic.
+- `benchmarking.py`: Unified entry point for comparative evaluation.
+- `visualize_results.py`: Results charting utility.

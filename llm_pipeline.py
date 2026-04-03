@@ -35,7 +35,7 @@ CATEGORY:"""
     def query_gemini_with_retry(self, prompt):
         """Calls Gemini API with resilient exponential backoff for 429 Rate Limit Errors."""
         response = self.client.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-1.5-flash",
             contents=prompt
         )
         return response.text.strip()

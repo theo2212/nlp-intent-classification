@@ -77,7 +77,7 @@ def run_benchmarking(subsample_size=150):
     print(f"-> Classical ML F1-Score: {f1_classic:.4f}")
     print(f"-> LLM F1-Score: {f1_llm:.4f}")
 
-    print(f"\\n=== Phase 4: Operational Benchmarking (Latency Test) ===")
+    print(f"\n=== Phase 4: Operational Benchmarking (Latency Test) ===")
     sample_10 = df_test.sample(n=10, random_state=42)
     
     latencies_classic = []
@@ -91,14 +91,13 @@ def run_benchmarking(subsample_size=150):
         text = row['text']
         _, l_c = uc_latency.predict_intent(text, model_type="classical")
         
-        # MOCKED LLM Latency to bypass current exhausted Gemini daily limit 
-        # _, l_l = uc_latency.predict_intent(text, model_type="llm")
-        l_l = random.uniform(1.2, 1.8)
+        # Real LLM Latency measurement
+        _, l_l = uc_latency.predict_intent(text, model_type="llm")
         
         latencies_classic.append(l_c)
         latencies_llm.append(l_l)
-        # Sleep to respect rate limits during live latency test (mocked)
-        time.sleep(0.1)
+        # Sleep to respect rate limits during live latency test
+        time.sleep(1)
         
     avg_classic_lat = sum(latencies_classic)/len(latencies_classic)
     avg_llm_lat = sum(latencies_llm)/len(latencies_llm)
@@ -106,11 +105,26 @@ def run_benchmarking(subsample_size=150):
     print(f"Average Inference Latency (Classical SVM): {avg_classic_lat:.4f} seconds")
     print(f"Average Inference Latency (LLM Gemini Flash): {avg_llm_lat:.4f} seconds")
 
-    print("\\n=== Phase 5: Qualitative Error Analysis ===")
-    # Let's find one example where Classical failed but LLM succeeded, or vice versa
+    print("\n=== Phase 5: Result Persistence ===")
+    results_data = {
+        "metrics": {
+            "f1_classic": f1_classic,
+            "f1_llm": f1_llm,
+            "avg_latency_classic": avg_classic_lat,
+            "avg_latency_llm": avg_llm_lat
+        },
+        "classification_samples": len(test_sample)
+    }
+    with open("results.json", "w") as f:
+        import json
+        json.dump(results_data, f, indent=4)
+    print("Results saved to results.json.")
+
+    print("\n=== Phase 6: Qualitative Error Analysis ===")
+    # Let's find one example where Classical failed but LLM succeeded
     for i, (t_label, c_label, l_label) in enumerate(zip(y_true, y_pred_classic, y_pred_llm)):
         if c_label != t_label and l_label == t_label:
-            print(f"\\nNuanced Ticket (LLM got right, SVM failed):")
+            print(f"\nNuanced Ticket (LLM got right, SVM failed):")
             print(f"Text: {test_sample.iloc[i]['text']}")
             print(f"True: {t_label} | SVM predicted: {c_label} | LLM predicted: {l_label}")
             break

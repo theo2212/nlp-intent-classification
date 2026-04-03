@@ -1,0 +1,9 @@
+{
+    "metrics": {
+        "f1_classic": 0.2541,
+        "f1_llm": 0.9823,
+        "avg_latency_classic": 0.0031,
+        "avg_latency_llm": 1.4925
+    },
+    "classification_samples": 100
+}
