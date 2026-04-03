@@ -9,7 +9,7 @@ from data_loader import get_cached_prediction, add_prediction_to_cache, save_llm
 class LLMPipeline:
     def __init__(self, api_key=None, label_names=None):
         if api_key is None:
-            api_key = os.environ.get("GEMINI_API_KEY")
+            api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
         self.client = genai.Client(api_key=api_key)
         self.label_names = label_names
 

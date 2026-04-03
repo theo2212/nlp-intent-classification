@@ -2,9 +2,13 @@ import time
 import random
 import pandas as pd
 from sklearn.metrics import classification_report, f1_score
+from dotenv import load_dotenv
 from data_loader import load_banking_dataset, load_llm_cache
 from classical_ml import ClassicalMLPipeline
 from llm_pipeline import LLMPipeline
+
+# Load environment variables (API Key)
+load_dotenv()
 
 class UnifiedClassifier:
     def __init__(self, classical_pipeline, llm_pipeline, llm_cache):
